@@ -1,0 +1,34 @@
+<div class="sales-container">
+    <div class="card glass-card">
+        <div class="card-header">
+            <h2>Novo Cadastro</h2>
+            <p>Cadastre um novo participante e emita um ingresso.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Nome Completo</label>
+            <input type="text" [(ngModel)]="name" placeholder="John Doe">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="email" placeholder="john@example.com">
+        </div>
+
+        <div class="form-group">
+            <label>ID do Evento</label>
+            <input type="text" [(ngModel)]="eventId" placeholder="Event ID">
+        </div>
+
+        <button class="submit-btn" (click)="register()" [disabled]="!name || !email">
+            Registrar & Check-in
+        </button>
+
+        <div class="result-box" [ngClass]="status" *ngIf="status !== 'idle'">
+            <div class="icon">
+                {{ status === 'success' ? '✅' : '⚠️' }}
+            </div>
+            <p>{{ message }}</p>
+        </div>
+    </div>
+</div>

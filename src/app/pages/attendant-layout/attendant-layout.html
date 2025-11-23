@@ -1,0 +1,46 @@
+<div class="layout-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" [class.closed]="!isSidebarOpen">
+        <div class="sidebar-header">
+            <h2>TicketApp</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a routerLink="/attendant" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+                <span class="icon">🏠</span>
+                <span class="label">Home</span>
+            </a>
+            <a routerLink="/attendant/validate" routerLinkActive="active">
+                <span class="icon">✅</span>
+                <span class="label">Validar Ingresso</span>
+            </a>
+            <a routerLink="/attendant/sales" routerLinkActive="active">
+                <span class="icon">🎟️</span>
+                <span class="label">Vender Ingresso</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button (click)="logout()">
+                <span class="icon">🚪</span>
+                <span class="label">Sair</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="top-bar">
+            <button class="menu-btn" (click)="toggleSidebar()">☰</button>
+
+            <div class="status-indicator" [class.offline]="isOffline">
+                <span class="status-dot"></span>
+                {{ isOffline ? 'Modo Offline' : 'Modo Online' }}
+            </div>
+        </header>
+
+        <div class="content-area">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>

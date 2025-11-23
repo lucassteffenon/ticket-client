@@ -1,0 +1,23 @@
+<div class="dashboard-container">
+  <div class="card glass-card">
+    <div class="card-header">
+      <h2>Validar Ingresso</h2>
+      <p>Insira o código do ingresso abaixo para verificar a validade.</p>
+    </div>
+
+    <div class="input-group">
+      <input type="text" [(ngModel)]="ticketCode" placeholder="Código do ingresso (e.g., TICKET-123)"
+        (keyup.enter)="validateTicket()">
+      <button (click)="validateTicket()" [disabled]="!ticketCode">
+        Validar
+      </button>
+    </div>
+
+    <div class="result-box" [ngClass]="validationStatus" *ngIf="validationStatus !== 'idle'">
+      <div class="icon">
+        {{ validationStatus === 'success' ? '✅' : '❌' }}
+      </div>
+      <p>{{ validationMessage }}</p>
+    </div>
+  </div>
+</div>

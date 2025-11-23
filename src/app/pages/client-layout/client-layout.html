@@ -1,0 +1,25 @@
+<div class="layout-container">
+    <header class="navbar">
+        <div class="container">
+            <a routerLink="/events" class="brand">
+                <span class="icon">🎟️</span>
+                TicketApp
+            </a>
+
+            <nav class="nav-actions">
+                <ng-container *ngIf="auth.currentUser; else loginBtn">
+                    <span class="user-greeting">Olá, {{ auth.currentUser.name }}</span>
+                    <button class="btn-logout" (click)="logout()">Sair</button>
+                </ng-container>
+
+                <ng-template #loginBtn>
+                    <a routerLink="/login" class="btn-login">Entrar</a>
+                </ng-template>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <router-outlet></router-outlet>
+    </main>
+</div>

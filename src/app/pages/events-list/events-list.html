@@ -1,1 +1,28 @@
-<p>events-list works!</p>
+<div class="events-container">
+    <header class="page-header">
+        <h1>Eventos</h1>
+        <p>Descubra e reserve ingressos para os melhores eventos.</p>
+    </header>
+
+    <div *ngIf="loading" class="loading-spinner">
+        Carregando eventos...
+    </div>
+
+    <div *ngIf="!loading" class="events-grid">
+        <div *ngFor="let event of events" class="event-card">
+            <div class="card-image" [style.backgroundImage]="'url(' + event.imageUrl + ')'"></div>
+            <div class="card-content">
+                <div class="card-meta">
+                    <span class="date">{{ event.date | date:'mediumDate' }}</span>
+                    <span class="location">{{ event.location }}</span>
+                </div>
+                <h2>{{ event.title }}</h2>
+                <p class="description">{{ event.description }}</p>
+                <div class="card-footer">
+                    <span class="price">{{ event.price === 0 ? 'Grátis' : (event.price | currency) }}</span>
+                    <a [routerLink]="['/events', event.id]" class="btn-details">Detalhes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

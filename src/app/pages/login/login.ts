@@ -22,7 +22,7 @@ export class LoginComponent {
   constructor(
     private auth: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   login() {
     this.errorMessage = '';
@@ -37,8 +37,12 @@ export class LoginComponent {
 
         this.loading = false;
 
-        // Redireciona para a lista de eventos
-        this.router.navigate(['/events']);
+        // Redireciona baseado no papel
+        if (this.auth.isAttendant()) {
+          this.router.navigate(['/attendant']);
+        } else {
+          this.router.navigate(['/events']);
+        }
       },
 
       error: (err) => {

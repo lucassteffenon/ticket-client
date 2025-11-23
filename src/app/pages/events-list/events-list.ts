@@ -1,18 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { EventsService, Event } from '../../services/events.service';
 
 @Component({
   selector: 'app-events-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './events-list.html',
-  styleUrl: './events-list.css',
+  styleUrls: ['./events-list.css'],
 })
-export class EventsListComponent {
-  events = [
-    { id: 1, name: 'Angular Conference', date: '2024-09-15' },
-    { id: 2, name: 'JavaScript Summit', date: '2024-10-20' },
-    { id: 3, name: 'Web Dev Meetup', date: '2024-11-05' },
-  ];
+export class EventsListComponent implements OnInit {
+  events: Event[] = [];
+  loading = true;
+
+  constructor(private eventsService: EventsService) { }
+
+  ngOnInit() {
+    this.eventsService.getEvents().subscribe((data) => {
+      this.events = data;
+      this.loading = false;
+    });
+  }
 }

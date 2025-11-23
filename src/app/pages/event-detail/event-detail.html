@@ -1,1 +1,49 @@
-<p>event-detail works!</p>
+<div class="content-grid" *ngIf="event">
+    <div class="main-info">
+        <h2>Sobre este Evento</h2>
+        <p class="description">{{ event.description }}</p>
+
+        <div class="meta-info">
+            <div class="meta-item">
+                <span class="label">Data</span>
+                <span class="value">{{ event.date | date:'fullDate' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">Localização</span>
+                <span class="value">{{ event.location }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="label">Preço</span>
+                <span class="value">{{ event.price === 0 ? 'Grátis' : (event.price | currency) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="enrollment-card">
+        <h3>Obtenha seu ingresso</h3>
+
+        <div *ngIf="enrollmentStatus === 'idle' || enrollmentStatus === 'processing' || enrollmentStatus === 'error'">
+            <p class="login-hint" *ngIf="!auth.currentUser">
+                Faça login para se inscrever neste evento.
+            </p>
+
+            <button class="enroll-btn" (click)="enroll()" [disabled]="enrollmentStatus === 'processing'">
+                {{ enrollmentStatus === 'processing' ? 'Processando...' : 'Inscrever-se Agora' }}
+            </button>
+
+            <p *ngIf="enrollmentStatus === 'error'" class="error-msg">Algo deu errado. Tente novamente.</p>
+        </div>
+
+        <div *ngIf="enrollmentStatus === 'success'" class="success-msg">
+            <div class="icon">🎉</div>
+            <h4>Ingresso Confirmado!</h4>
+            <p>Código do ingresso:</p>
+            <div class="ticket-code">{{ ticketCode }}</div>
+            <p class="small">Por favor, salve este código ou verifique seu email.</p>
+            <a routerLink="/events" class="back-link">Voltar para Eventos</a>
+        </div>
+    </div>
+</div>
+
+
+<div *ngIf="loading" class="loading">Carregando detalhes do evento...</div>

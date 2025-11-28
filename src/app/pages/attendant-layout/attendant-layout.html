@@ -1,45 +1,78 @@
-<div class="layout-container">
+<div class="flex h-screen bg-gray-50">
     <!-- Sidebar -->
-    <aside class="sidebar" [class.closed]="!isSidebarOpen">
-        <div class="sidebar-header">
-            <h2>TicketApp</h2>
+    <aside class="bg-gradient-to-b from-blue-600 to-purple-600 text-white transition-all duration-300"
+           [class.w-64]="isSidebarOpen"
+           [class.w-20]="!isSidebarOpen">
+        <!-- Sidebar Header -->
+        <div class="h-16 flex items-center justify-center border-b border-white/10">
+            <h2 class="font-bold text-xl" [class.hidden]="!isSidebarOpen">TicketApp</h2>
+            <span class="text-2xl" [class.hidden]="isSidebarOpen">🎟️</span>
         </div>
 
-        <nav class="sidebar-nav">
-            <a routerLink="/attendant" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-                <span class="icon">🏠</span>
-                <span class="label">Home</span>
+        <!-- Sidebar Navigation -->
+        <nav class="flex-1 p-4 space-y-2">
+            <a routerLink="/attendant"
+               routerLinkActive="bg-white/20"
+               [routerLinkActiveOptions]="{exact: true}"
+               class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
+                <span class="text-2xl">🏠</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Home</span>
             </a>
-            <a routerLink="/attendant/validate" routerLinkActive="active">
-                <span class="icon">✅</span>
-                <span class="label">Validar Ingresso</span>
+            <a routerLink="/attendant/validate"
+               routerLinkActive="bg-white/20"
+               class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
+                <span class="text-2xl">✅</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Validar Ingresso</span>
             </a>
-            <a routerLink="/attendant/sales" routerLinkActive="active">
-                <span class="icon">🎟️</span>
-                <span class="label">Vender Ingresso</span>
+            <a routerLink="/attendant/sales"
+               routerLinkActive="bg-white/20"
+               class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
+                <span class="text-2xl">🎟️</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Vender Ingresso</span>
             </a>
         </nav>
 
-        <div class="sidebar-footer">
-            <button (click)="logout()">
-                <span class="icon">🚪</span>
-                <span class="label">Sair</span>
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-white/10">
+            <button
+                (click)="logout()"
+                class="flex items-center space-x-3 w-full px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
+                <span class="text-2xl">🚪</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Sair</span>
             </button>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="main-content">
-        <header class="top-bar">
-            <button class="menu-btn" (click)="toggleSidebar()">☰</button>
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6">
+            <button
+                (click)="toggleSidebar()"
+                class="text-gray-600 hover:text-gray-900 transition-colors duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
 
-            <div class="status-indicator" [class.offline]="isOffline">
-                <span class="status-dot"></span>
-                {{ isOffline ? 'Modo Offline' : 'Modo Online' }}
+            <!-- Status Indicator -->
+            <div class="flex items-center space-x-2"
+                 [class.text-gray-600]="!isOffline"
+                 [class.text-orange-600]="isOffline">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                          [class.bg-green-400]="!isOffline"
+                          [class.bg-orange-400]="isOffline"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3"
+                          [class.bg-green-500]="!isOffline"
+                          [class.bg-orange-500]="isOffline"></span>
+                </span>
+                <span class="font-medium">{{ isOffline ? 'Modo Offline' : 'Modo Online' }}</span>
             </div>
         </header>
 
-        <div class="content-area">
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto">
             <router-outlet></router-outlet>
         </div>
     </main>

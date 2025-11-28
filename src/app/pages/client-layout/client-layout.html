@@ -1,25 +1,39 @@
-<div class="layout-container">
-    <header class="navbar">
-        <div class="container">
-            <a routerLink="/events" class="brand">
-                <span class="icon">🎟️</span>
-                TicketApp
-            </a>
+<div class="min-h-screen bg-gray-50">
+    <!-- Navbar -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <a routerLink="/events" class="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+                    <span class="text-3xl">🎟️</span>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">TicketApp</span>
+                </a>
 
-            <nav class="nav-actions">
-                <ng-container *ngIf="auth.currentUser; else loginBtn">
-                    <span class="user-greeting">Olá, {{ auth.currentUser.name }}</span>
-                    <button class="btn-logout" (click)="logout()">Sair</button>
-                </ng-container>
+                <!-- Navigation -->
+                <nav class="flex items-center space-x-4">
+                    <ng-container *ngIf="auth.currentUser; else loginBtn">
+                        <span class="text-gray-700 font-medium">Olá, <span class="text-blue-600">{{ auth.currentUser.name }}</span></span>
+                        <button
+                            (click)="logout()"
+                            class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200">
+                            Sair
+                        </button>
+                    </ng-container>
 
-                <ng-template #loginBtn>
-                    <a routerLink="/login" class="btn-login">Entrar</a>
-                </ng-template>
-            </nav>
+                    <ng-template #loginBtn>
+                        <a
+                            routerLink="/login"
+                            class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200">
+                            Entrar
+                        </a>
+                    </ng-template>
+                </nav>
+            </div>
         </div>
     </header>
 
-    <main class="main-content">
+    <!-- Main Content -->
+    <main>
         <router-outlet></router-outlet>
     </main>
 </div>

@@ -9,7 +9,7 @@ import { AuthService } from '../../services/auth';
     standalone: true,
     imports: [CommonModule, RouterModule],
     templateUrl: './attendant-layout.html',
-    styleUrls: ['./attendant-layout.css']
+    styleUrls: [],
 })
 export class AttendantLayoutComponent {
     isOffline: boolean = !navigator.onLine;

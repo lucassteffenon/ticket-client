@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 
 import { AppConfig } from '../config';
@@ -9,7 +9,7 @@ import { AppConfig } from '../config';
 })
 export class AuthService {
 
-  private apiUrl = `${AppConfig.apiUrl}/auth`;
+  private apiUrl = `${AppConfig.apiUrl}`;
 
   currentUser: { name: string, email: string, role: 'client' | 'attendant' } | null = null;
 
@@ -25,20 +25,8 @@ export class AuthService {
   }
 
   login(email: string, password: string): Observable<any> {
-    // Mock login for demonstration
-    if (email === 'attendant@test.com') {
-      const user = { name: 'Attendant User', email, role: 'attendant' as const };
-      this.currentUser = user;
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      return of({ token: 'mock-token', role: 'attendant' });
-    }
-
-    // Mock client login
-    const user = { name: 'Client User', email, role: 'client' as const };
-    this.currentUser = user;
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    return of({ token: 'mock-token', role: 'client' });
-    return this.http.post(`${this.apiUrl}/login`, {
+    
+    return this.http.post(`${this.apiUrl}/api/login`, {
       email,
       password
     });
@@ -46,6 +34,14 @@ export class AuthService {
 
   isAttendant(): boolean {
     return this.currentUser?.role === 'attendant';
+  }
+
+  myData(token: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
+    return this.http.get(`${this.apiUrl}/api/users/me`, { headers: headers });
   }
 
   logout() {

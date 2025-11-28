@@ -1,23 +1,183 @@
-<div class="dashboard-container">
-  <div class="card glass-card">
-    <div class="card-header">
-      <h2>Validar Ingresso</h2>
-      <p>Insira o código do ingresso abaixo para verificar a validade.</p>
-    </div>
-
-    <div class="input-group">
-      <input type="text" [(ngModel)]="ticketCode" placeholder="Código do ingresso (e.g., TICKET-123)"
-        (keyup.enter)="validateTicket()">
-      <button (click)="validateTicket()" [disabled]="!ticketCode">
-        Validar
-      </button>
-    </div>
-
-    <div class="result-box" [ngClass]="validationStatus" *ngIf="validationStatus !== 'idle'">
-      <div class="icon">
-        {{ validationStatus === 'success' ? '✅' : '❌' }}
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto">
+    
+    <!-- Status Bar -->
+    <div class="mb-6 flex items-center justify-between">
+      <h1 class="text-3xl font-bold text-gray-900">Check-in de Eventos</h1>
+      <div class="flex items-center space-x-2" [class.text-green-600]="!isOffline" [class.text-orange-600]="isOffline">
+        <span class="relative flex h-3 w-3">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                [class.bg-green-400]="!isOffline"
+                [class.bg-orange-400]="isOffline"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3"
+                [class.bg-green-500]="!isOffline"
+                [class.bg-orange-500]="isOffline"></span>
+        </span>
+        <span class="font-medium">{{ isOffline ? 'Modo Offline' : 'Modo Online' }}</span>
       </div>
-      <p>{{ validationMessage }}</p>
     </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <span class="ml-3 text-gray-600">Carregando...</span>
+    </div>
+
+    <!-- Events List -->
+    <div *ngIf="!selectedEvent && !loading">
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">Selecione um Evento</h2>
+        <p class="text-gray-600 mb-4">Escolha o evento para realizar o check-in dos participantes</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div *ngFor="let event of events" 
+             (click)="selectEvent(event)"
+             class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer">
+          <div class="h-32 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <svg class="w-12 h-12 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">{{ event.title }}</h3>
+            <div class="flex items-center text-sm text-gray-500 mb-1">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+              <span>{{ event.starts_at | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <div class="flex items-center text-sm text-gray-500">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              </svg>
+              <span>{{ event.location }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Participants List -->
+    <div *ngIf="selectedEvent && !loading">
+      <!-- Header with Back Button and Download -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <button (click)="backToEvents()" class="flex items-center text-gray-600 hover:text-gray-900">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Voltar para Eventos
+          </button>
+          
+          <button 
+            (click)="downloadForOffline()"
+            class="flex items-center bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Baixar para Offline
+          </button>
+        </div>
+
+        <h2 class="text-2xl font-bold text-gray-900 mb-2">{{ selectedEvent.title }}</h2>
+        <p class="text-gray-600 mb-4">{{ selectedEvent.description }}</p>
+        
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-blue-50 rounded-lg p-4 text-center">
+            <div class="text-3xl font-bold text-blue-600">{{ getTotalCount() }}</div>
+            <div class="text-sm text-gray-600">Total Inscritos</div>
+          </div>
+          <div class="bg-green-50 rounded-lg p-4 text-center">
+            <div class="text-3xl font-bold text-green-600">{{ getCheckedInCount() }}</div>
+            <div class="text-sm text-gray-600">Check-in Feito</div>
+          </div>
+          <div class="bg-orange-50 rounded-lg p-4 text-center">
+            <div class="text-3xl font-bold text-orange-600">{{ getTotalCount() - getCheckedInCount() }}</div>
+            <div class="text-sm text-gray-600">Pendentes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="filterParticipants()"
+            placeholder="Buscar por nome, email ou código do ingresso..."
+            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <!-- Participants Table -->
+      <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ação</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let participant of filteredParticipants" [class.bg-green-50]="participant.checked_in">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">{{ participant.name }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-500">{{ participant.email }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-mono text-gray-900">{{ participant.ticket_code }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span *ngIf="participant.checked_in" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Check-in Feito
+                  </span>
+                  <span *ngIf="!participant.checked_in" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    Pendente
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                  <button
+                    *ngIf="!participant.checked_in"
+                    (click)="checkIn(participant)"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200">
+                    Fazer Check-in
+                  </button>
+                  <span *ngIf="participant.checked_in" class="text-green-600 font-medium">
+                    ✓ Confirmado
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="filteredParticipants.length === 0" class="text-center py-12">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+          </svg>
+          <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum participante encontrado</h3>
+          <p class="mt-1 text-sm text-gray-500">Tente ajustar sua busca</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>

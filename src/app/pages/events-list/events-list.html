@@ -1,28 +1,78 @@
-<div class="events-container">
-    <header class="page-header">
-        <h1>Eventos</h1>
-        <p>Descubra e reserve ingressos para os melhores eventos.</p>
-    </header>
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Eventos</h1>
+            <p class="text-lg text-gray-600">Descubra e reserve ingressos para os melhores eventos.</p>
+        </header>
 
-    <div *ngIf="loading" class="loading-spinner">
-        Carregando eventos...
-    </div>
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-600">Carregando eventos...</span>
+        </div>
 
-    <div *ngIf="!loading" class="events-grid">
-        <div *ngFor="let event of events" class="event-card">
-            <div class="card-image" [style.backgroundImage]="'url(' + event.imageUrl + ')'"></div>
-            <div class="card-content">
-                <div class="card-meta">
-                    <span class="date">{{ event.date | date:'mediumDate' }}</span>
-                    <span class="location">{{ event.location }}</span>
+        <!-- Events Grid -->
+        <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div *ngFor="let event of events" 
+                 class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer">
+                
+                <!-- Event Image -->
+                <div class="h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative overflow-hidden"
+                     [style.backgroundImage]="event.imageUrl ? 'url(' + event.imageUrl + ')' : null"
+                     [style.backgroundSize]="'cover'"
+                     [style.backgroundPosition]="'center'">
+                    <div *ngIf="!event.imageUrl" class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-16 h-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <h2>{{ event.title }}</h2>
-                <p class="description">{{ event.description }}</p>
-                <div class="card-footer">
-                    <span class="price">{{ event.price === 0 ? 'Grátis' : (event.price | currency) }}</span>
-                    <a [routerLink]="['/events', event.id]" class="btn-details">Detalhes</a>
+                
+                <!-- Event Content -->
+                <div class="p-6">
+                    <!-- Meta Info -->
+                    <div class="flex items-center justify-between mb-3 text-sm text-gray-500">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>{{ event.starts_at | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span>{{ event.location }}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Title -->
+                    <h2 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ event.title }}</h2>
+                    
+                    <!-- Description -->
+                    <p class="text-gray-600 text-sm mb-4 line-clamp-3">{{ event.description }}</p>
+                    
+                    <!-- Footer -->
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <span class="text-2xl font-bold text-blue-600">Grátis</span>
+                        <a [routerLink]="['/events', event.id]" 
+                           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200">
+                            Ver Detalhes
+                        </a>
+                    </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!loading && events.length === 0" class="text-center py-20">
+            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h3 class="mt-4 text-lg font-medium text-gray-900">Nenhum evento encontrado</h3>
+            <p class="mt-2 text-gray-500">Não há eventos disponíveis no momento.</p>
         </div>
     </div>
 </div>

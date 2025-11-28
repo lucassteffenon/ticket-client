@@ -1,79 +1,167 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { EventsService, Event } from '../../services/events.service';
 import { OfflineService } from '../../services/offline.service';
-import { SyncService } from '../../services/sync.service';
+import { AppConfig } from '../../config';
+
+interface Participant {
+    id: string;
+    name: string;
+    email: string;
+    ticket_code: string;
+    checked_in: boolean;
+    checked_in_at?: string;
+}
 
 @Component({
     selector: 'app-attendant-dashboard',
     standalone: true,
     imports: [CommonModule, FormsModule],
     templateUrl: './attendant-dashboard.html',
-    styleUrls: ['./attendant-dashboard.css']
 })
-export class AttendantDashboardComponent {
-    ticketCode: string = '';
-    validationMessage: string = '';
-    validationStatus: 'idle' | 'success' | 'error' = 'idle';
+export class AttendantDashboardComponent implements OnInit {
+    events: Event[] = [];
+    selectedEvent: Event | null = null;
+    participants: Participant[] = [];
+    filteredParticipants: Participant[] = [];
+    searchTerm: string = '';
+    loading: boolean = false;
     isOffline: boolean = !navigator.onLine;
+    offlineDataLoaded: boolean = false;
 
     constructor(
+        private eventsService: EventsService,
         private offlineService: OfflineService,
-        public syncService: SyncService
+        private http: HttpClient
     ) {
         window.addEventListener('online', () => this.isOffline = false);
         window.addEventListener('offline', () => this.isOffline = true);
     }
 
-    async validateTicket() {
-        if (!this.ticketCode) return;
+    ngOnInit() {
+        this.loadEvents();
+    }
 
-        this.validationStatus = 'idle';
-        this.validationMessage = 'Validating...';
+    loadEvents() {
+        this.loading = true;
+
+        this.eventsService.getEvents().subscribe({
+            next: (data) => {
+                this.events = data;
+                this.loading = false;
+            },
+            error: (err) => {
+                console.error('Erro ao carregar eventos:', err);
+                this.loading = false;
+            }
+        });
+    }
+
+    selectEvent(event: Event) {
+        this.selectedEvent = event;
+        this.loadParticipants(event.id);
+    }
+
+    loadParticipants(eventId: string) {
+        this.loading = true;
+        const token = localStorage.getItem('token') || '';
+        const headers = new HttpHeaders({
+            'Authorization': `Bearer ${token}`
+        });
+
+        this.http.get<Participant[]>(`${AppConfig.apiUrl}/api/events/${eventId}/participants`, { headers })
+            .subscribe({
+                next: (data) => {
+                    this.participants = data;
+                    this.filteredParticipants = data;
+                    this.loading = false;
+                },
+                error: (err) => {
+                    console.error('Erro ao carregar participantes:', err);
+                    this.loading = false;
+                }
+            });
+    }
+
+    filterParticipants() {
+        if (!this.searchTerm) {
+            this.filteredParticipants = this.participants;
+            return;
+        }
+
+        const term = this.searchTerm.toLowerCase();
+        this.filteredParticipants = this.participants.filter(p => 
+            p.name.toLowerCase().includes(term) ||
+            p.email.toLowerCase().includes(term) ||
+            p.ticket_code.toLowerCase().includes(term)
+        );
+    }
+
+    async checkIn(participant: Participant) {
+        if (participant.checked_in) return;
+
+        const token = localStorage.getItem('token') || '';
+        const headers = new HttpHeaders({
+            'Authorization': `Bearer ${token}`
+        });
+
+        this.http.post(
+            `${AppConfig.apiUrl}/api/events/${this.selectedEvent?.id}/checkin`,
+            { ticket_code: participant.ticket_code },
+            { headers }
+        ).subscribe({
+            next: () => {
+                participant.checked_in = true;
+                participant.checked_in_at = new Date().toISOString();
+            },
+            error: (err) => {
+                console.error('Erro ao fazer check-in:', err);
+                alert('Erro ao fazer check-in. Tente novamente.');
+            }
+        });
+    }
+
+    async downloadForOffline() {
+        if (!this.selectedEvent) {
+            alert('Selecione um evento primeiro!');
+            return;
+        }
+
+        this.loading = true;
 
         try {
-            // 1. Check local DB first (offline-first approach)
-            const ticket = await this.offlineService.getTicket(this.ticketCode);
+            // Salvar dados no IndexedDB para uso offline
+            const offlineData = {
+                event: this.selectedEvent,
+                participants: this.participants,
+                downloadedAt: new Date().toISOString()
+            };
 
-            if (ticket) {
-                if (ticket.status === 'valid') {
-                    this.validationStatus = 'success';
-                    this.validationMessage = `Valid Ticket! Holder: ${ticket.holderName || 'Unknown'}`;
-
-                    // Mark as used locally
-                    ticket.status = 'used';
-                    await this.offlineService.saveTickets([ticket]);
-
-                    // Add to pending validations for sync
-                    await this.offlineService.addPendingValidation({
-                        code: this.ticketCode,
-                        timestamp: Date.now(),
-                        status: 'valid'
-                    });
-
-                } else {
-                    this.validationStatus = 'error';
-                    this.validationMessage = `Ticket is ${ticket.status.toUpperCase()}`;
-                }
-            } else {
-                // If not found locally and we are offline, we can't do much unless we assume full sync
-                if (this.isOffline) {
-                    this.validationStatus = 'error';
-                    this.validationMessage = 'Ticket not found in local database.';
-                } else {
-                    // Fallback to online validation if needed, but for this task we focus on offline-first
-                    this.validationStatus = 'error';
-                    this.validationMessage = 'Ticket not found (Online fallback not implemented yet).';
-                }
-            }
+            localStorage.setItem(`offline_event_${this.selectedEvent.id}`, JSON.stringify(offlineData));
+            this.offlineDataLoaded = true;
+            this.loading = false;
+            alert('Dados baixados com sucesso! Agora você pode trabalhar offline.');
         } catch (err) {
-            console.error(err);
-            this.validationStatus = 'error';
-            this.validationMessage = 'Error validating ticket.';
+            console.error('Erro ao baixar dados:', err);
+            this.loading = false;
+            alert('Erro ao baixar dados para modo offline.');
         }
     }
 
-    async forceSync() {
-        await this.syncService.sync();
+    backToEvents() {
+        this.selectedEvent = null;
+        this.participants = [];
+        this.filteredParticipants = [];
+        this.searchTerm = '';
+    }
+
+    getCheckedInCount(): number {
+        return this.participants.filter(p => p.checked_in).length;
+    }
+
+    getTotalCount(): number {
+        return this.participants.length;
     }
 }

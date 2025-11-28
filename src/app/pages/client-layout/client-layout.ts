@@ -7,8 +7,7 @@ import { AuthService } from '../../services/auth';
     selector: 'app-client-layout',
     standalone: true,
     imports: [CommonModule, RouterModule],
-    templateUrl: './client-layout.html',
-    styleUrls: ['./client-layout.css']
+    templateUrl: './client-layout.html'
 })
 export class ClientLayoutComponent {
     constructor(public auth: AuthService, private router: Router) { }

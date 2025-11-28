@@ -9,10 +9,9 @@ import { AuthService } from '../../services/auth';
   selector: 'app-login',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  providers: [AuthService],
   templateUrl: './login.html',
-  styleUrl: './login.css',
 })
+
 export class LoginComponent {
   email = '';
   password = '';
@@ -30,26 +29,40 @@ export class LoginComponent {
 
     this.auth.login(this.email, this.password).subscribe({
       next: (res) => {
-        // Se a API devolver token/JWT
-        if (res?.token) {
-          localStorage.setItem('token', res.token);
-        }
-
-        this.loading = false;
-
-        // Redireciona baseado no papel
-        if (this.auth.isAttendant()) {
-          this.router.navigate(['/attendant']);
-        } else {
-          this.router.navigate(['/events']);
+        if (res?.access_token) {
+          localStorage.setItem('token', res.access_token);
+          
+          // Agora busca os dados do usuário COM o token
+          this.auth.myData(res.access_token).subscribe({
+            next: (userData) => {
+              this.auth.currentUser = {
+                name: userData.name,
+                email: userData.email,
+                role: userData.is_attendant ? 'attendant' : 'client'
+              };
+              localStorage.setItem('currentUser', JSON.stringify(this.auth.currentUser));
+              
+              this.loading = false;
+              
+              // Redireciona baseado no papel
+              if (this.auth.isAttendant()) {
+                this.router.navigate(['/attendant']);
+              } else {
+                this.router.navigate(['/events']);
+              }
+            },
+            error: (err) => {
+              this.loading = false;
+              console.error('Erro ao obter dados do usuário:', err);
+              this.errorMessage = 'Erro ao carregar dados do usuário';
+            }
+          });
         }
       },
 
       error: (err) => {
         this.loading = false;
-
-        this.errorMessage =
-          err?.error?.message || 'Email ou senha inválidos';
+        this.errorMessage = err?.error?.message || 'Email ou senha inválidos';
       }
     });
   }

@@ -9,8 +9,7 @@ import { AuthService } from '../../services/auth';
   selector: 'app-event-detail',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
-  templateUrl: './event-detail.html',
-  styleUrls: ['./event-detail.css'],
+  templateUrl: './event-detail.html'
 })
 export class EventDetailComponent implements OnInit {
   event: Event | undefined;
@@ -28,6 +27,7 @@ export class EventDetailComponent implements OnInit {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
+
     if (id) {
       this.eventsService.getEvent(id).subscribe((event) => {
         this.event = event;

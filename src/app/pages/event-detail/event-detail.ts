@@ -14,6 +14,9 @@ import { AuthService } from '../../services/auth';
 export class EventDetailComponent implements OnInit {
   event: Event | undefined;
   loading = true;
+  checkingEnrollment = true;
+  isAlreadyEnrolled = false;
+  existingTicketCode = '';
 
   enrollmentStatus: 'idle' | 'processing' | 'success' | 'error' = 'idle';
   ticketCode = '';
@@ -32,8 +35,46 @@ export class EventDetailComponent implements OnInit {
       this.eventsService.getEvent(id).subscribe((event) => {
         this.event = event;
         this.loading = false;
+        
+        // Se o usuário estiver logado, verificar se já está inscrito
+        if (this.auth.currentUser) {
+          this.checkEnrollment();
+        } else {
+          this.checkingEnrollment = false;
+        }
       });
     }
+  }
+
+  checkEnrollment() {
+    this.checkingEnrollment = true;
+    
+    this.eventsService.getMyEnrollments().subscribe({
+      next: (enrollments) => {
+        console.log('📋 Meus enrollments:', enrollments);
+        
+        // Verifica se o usuário já está inscrito neste evento
+        const enrollment = enrollments.find(
+          (e: any) => e.event_id === parseInt(this.event?.id || '0')
+        );
+        
+        if (enrollment) {
+          this.isAlreadyEnrolled = true;
+          this.existingTicketCode = enrollment.id?.toString() || 'CONFIRMADO';
+          this.enrollmentStatus = 'success';
+          this.ticketCode = this.existingTicketCode;
+          console.log('✅ Usuário já inscrito! Código:', this.ticketCode);
+        } else {
+          console.log('❌ Usuário não inscrito neste evento');
+        }
+        
+        this.checkingEnrollment = false;
+      },
+      error: (err) => {
+        console.error('Erro ao verificar enrollments:', err);
+        this.checkingEnrollment = false;
+      }
+    });
   }
 
   enroll() {
@@ -44,18 +85,25 @@ export class EventDetailComponent implements OnInit {
       return;
     }
 
+    // Se já está inscrito, não fazer nada
+    if (this.isAlreadyEnrolled) {
+      return;
+    }
+
     this.enrollmentStatus = 'processing';
 
     this.eventsService.enroll({
-      eventId: this.event.id,
-      name: this.auth.currentUser.name,
-      email: this.auth.currentUser.email
+      user_id: this.auth.currentUser.id,
+      event_id: parseInt(this.event.id),
+      source: 'web'
     }).subscribe({
       next: (res) => {
         this.enrollmentStatus = 'success';
-        this.ticketCode = res.ticketCode;
+        this.isAlreadyEnrolled = true;
+        this.ticketCode = res.ticketCode || res.enrollment?.id || 'CONFIRMADO';
       },
-      error: () => {
+      error: (err) => {
+        console.error('Erro ao fazer enrollment:', err);
         this.enrollmentStatus = 'error';
       }
     });

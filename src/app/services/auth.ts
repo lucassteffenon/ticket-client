@@ -11,7 +11,7 @@ export class AuthService {
 
   private apiUrl = `${AppConfig.apiUrl}`;
 
-  currentUser: { name: string, email: string, role: 'client' | 'attendant' } | null = null;
+  currentUser: { id: number, name: string, email: string, role: 'client' | 'attendant' } | null = null;
 
   constructor(private http: HttpClient) {
     this.loadSession();
@@ -30,6 +30,10 @@ export class AuthService {
       email,
       password
     });
+  }
+
+  register(userData: { name: string, cpf: string, email: string, password: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/api/register`, userData);
   }
 
   isAttendant(): boolean {

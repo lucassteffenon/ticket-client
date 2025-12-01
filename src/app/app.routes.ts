@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './pages/login/login';
+import { RegisterComponent } from './pages/register/register';
 import { EventsListComponent } from './pages/events-list/events-list';
 import { EventDetailComponent } from './pages/event-detail/event-detail';
 import { AttendantDashboardComponent } from './pages/attendant-dashboard/attendant-dashboard';
@@ -10,14 +11,14 @@ import { AuthGuard } from './guards/auth.guard';
 import { ClientLayoutComponent } from './pages/client-layout/client-layout';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'events', pathMatch: 'full' },
 
   { path: 'login', component: LoginComponent },
+  { path: 'register', component: RegisterComponent },
   {
     path: '',
     component: ClientLayoutComponent,
     children: [
-      { path: '', redirectTo: 'events', pathMatch: 'full' },
       { path: 'events', component: EventsListComponent },
       { path: 'events/:id', component: EventDetailComponent },
     ]

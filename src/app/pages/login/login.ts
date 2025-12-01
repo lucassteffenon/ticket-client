@@ -35,11 +35,14 @@ export class LoginComponent {
           // Agora busca os dados do usuário COM o token
           this.auth.myData(res.access_token).subscribe({
             next: (userData) => {
+              
               this.auth.currentUser = {
+                id: userData.id,
                 name: userData.name,
                 email: userData.email,
                 role: userData.is_attendant ? 'attendant' : 'client'
               };
+              
               localStorage.setItem('currentUser', JSON.stringify(this.auth.currentUser));
               
               this.loading = false;

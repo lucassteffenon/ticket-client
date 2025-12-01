@@ -7,15 +7,22 @@ export interface Event {
     id: string;
     title: string;
     starts_at: string;
+    ends_at: string;
     location: string;
     description: string;
     imageUrl: string;
 }
 
 export interface EnrollmentRequest {
-    eventId: string;
-    name: string;
-    email: string;
+    user_id: number;
+    event_id: number;
+    source: 'web' | 'presential';
+}
+
+export interface EnrollmentResponse {
+    success: boolean;
+    ticketCode?: string;
+    enrollment?: any;
 }
 
 @Injectable({
@@ -41,10 +48,11 @@ export class EventsService {
         return this.http.get<Event>(`${this.apiUrl}/api/events/${id}`);
     }
 
-    enroll(request: EnrollmentRequest): Observable<{ success: boolean; ticketCode: string }> {
-        // Mock enrollment
-        console.log('Enrolling user:', request);
-        const ticketCode = `TICKET-${Math.floor(Math.random() * 10000)}`;
-        return of({ success: true, ticketCode });
+    enroll(request: EnrollmentRequest): Observable<EnrollmentResponse> {
+        return this.http.post<EnrollmentResponse>(`${this.apiUrl}/api/enrollments`, request);
+    }
+
+    getMyEnrollments(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/api/enrollments/me`);
     }
 }

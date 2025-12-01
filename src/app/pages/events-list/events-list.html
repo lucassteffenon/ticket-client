@@ -15,8 +15,18 @@
         <!-- Events Grid -->
         <div *ngIf="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <div *ngFor="let event of events" 
-                 class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer">
+                 class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer relative">
                 
+                <!-- Enrolled Badge -->
+                <div *ngIf="isEnrolled(event.id)" class="absolute top-4 right-4 z-10">
+                    <div class="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center shadow-lg">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Inscrito
+                    </div>
+                </div>
+
                 <!-- Event Image -->
                 <div class="h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative overflow-hidden"
                      [style.backgroundImage]="event.imageUrl ? 'url(' + event.imageUrl + ')' : null"
@@ -47,6 +57,14 @@
                             <span>{{ event.location }}</span>
                         </div>
                     </div>
+
+                    <!-- Horário -->
+                    <div class="flex items-center mb-3 text-sm text-gray-500">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>{{ event.starts_at | date:'HH:mm' }} - {{ event.ends_at | date:'HH:mm' }}</span>
+                    </div>
                     
                     <!-- Title -->
                     <h2 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">{{ event.title }}</h2>
@@ -58,8 +76,10 @@
                     <div class="flex items-center justify-between pt-4 border-t border-gray-100">
                         <span class="text-2xl font-bold text-blue-600">Grátis</span>
                         <a [routerLink]="['/events', event.id]" 
-                           class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200">
-                            Ver Detalhes
+                           [class]="isEnrolled(event.id) ? 
+                               'bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200' : 
+                               'bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200'">
+                            {{ isEnrolled(event.id) ? 'Ver Ingresso' : 'Ver Detalhes' }}
                         </a>
                     </div>
                 </div>

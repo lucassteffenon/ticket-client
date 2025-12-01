@@ -1,5 +1,15 @@
 <div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl mx-auto">
+    <!-- Back Button -->
+    <button 
+      routerLink="/events"
+      class="mb-6 inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200 shadow-sm">
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+      </svg>
+      Voltar para eventos
+    </button>
+
     <!-- Loading State -->
     <div *ngIf="loading" class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -30,9 +40,12 @@
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                <span class="text-sm font-semibold">Data</span>
+                <span class="text-sm font-semibold">Data e Horário</span>
               </div>
               <p class="text-gray-900 font-medium">{{ event.starts_at | date:'dd/MM/yyyy' }}</p>
+              <p class="text-gray-600 text-sm mt-1">
+                {{ event.starts_at | date:'HH:mm' }} - {{ event.ends_at | date:'HH:mm' }}
+              </p>
             </div>
 
             <div class="bg-green-50 rounded-lg p-4">
@@ -70,8 +83,36 @@
         <div class="bg-white rounded-xl shadow-lg p-6 sticky top-6">
           <h3 class="text-2xl font-bold text-gray-900 mb-6">Obtenha seu ingresso</h3>
 
+          <!-- Loading Enrollment Check -->
+          <div *ngIf="checkingEnrollment" class="text-center py-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="text-gray-600 text-sm mt-2">Verificando inscrição...</p>
+          </div>
+
+          <!-- Already Enrolled State -->
+          <div *ngIf="!checkingEnrollment && isAlreadyEnrolled" class="text-center">
+            <div class="mb-4">
+              <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <h4 class="text-xl font-bold text-gray-900 mb-2">Você já está inscrito!</h4>
+              <p class="text-gray-600 mb-4">Código do ingresso:</p>
+              <div class="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-4 mb-4">
+                <code class="text-2xl font-mono font-bold text-blue-600">{{ ticketCode }}</code>
+              </div>
+              <p class="text-sm text-gray-500 mb-6">Guarde este código para o dia do evento.</p>
+              <a
+                routerLink="/events"
+                class="inline-block w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200">
+                Voltar para Eventos
+              </a>
+            </div>
+          </div>
+
           <!-- Idle/Processing/Error State -->
-          <div *ngIf="enrollmentStatus === 'idle' || enrollmentStatus === 'processing' || enrollmentStatus === 'error'">
+          <div *ngIf="!checkingEnrollment && !isAlreadyEnrolled && (enrollmentStatus === 'idle' || enrollmentStatus === 'processing' || enrollmentStatus === 'error')">
             <div *ngIf="!auth.currentUser" class="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p class="text-yellow-800 text-sm">Faça login para se inscrever neste evento.</p>
             </div>
@@ -88,8 +129,8 @@
             </div>
           </div>
 
-          <!-- Success State -->
-          <div *ngIf="enrollmentStatus === 'success'" class="text-center">
+          <!-- Success State (New Enrollment) -->
+          <div *ngIf="!checkingEnrollment && !isAlreadyEnrolled && enrollmentStatus === 'success'" class="text-center">
             <div class="mb-4">
               <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
                 <span class="text-4xl">🎉</span>

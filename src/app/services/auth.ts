@@ -33,7 +33,7 @@ export class AuthService {
   }
 
   register(userData: { name: string, cpf: string, email: string, password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/api/register`, userData);
+    return this.http.post(`${this.apiUrl}/api/users`, userData);
   }
 
   isAttendant(): boolean {

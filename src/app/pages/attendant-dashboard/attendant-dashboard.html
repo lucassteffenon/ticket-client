@@ -4,17 +4,6 @@
     <!-- Status Bar -->
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-3xl font-bold text-gray-900">Check-in de Eventos</h1>
-      <div class="flex items-center space-x-2" [class.text-green-600]="!isOffline" [class.text-orange-600]="isOffline">
-        <span class="relative flex h-3 w-3">
-          <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                [class.bg-green-400]="!isOffline"
-                [class.bg-orange-400]="isOffline"></span>
-          <span class="relative inline-flex rounded-full h-3 w-3"
-                [class.bg-green-500]="!isOffline"
-                [class.bg-orange-500]="isOffline"></span>
-        </span>
-        <span class="font-medium">{{ isOffline ? 'Modo Offline' : 'Modo Online' }}</span>
-      </div>
     </div>
 
     <!-- Loading -->
@@ -128,7 +117,6 @@
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ação</th>
               </tr>
@@ -140,9 +128,6 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-500">{{ participant.email }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-mono text-gray-900">{{ participant.ticket_code }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span *ngIf="participant.checked_in" class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

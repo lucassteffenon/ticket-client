@@ -21,6 +21,13 @@ export interface PendingRegistration {
   timestamp: number;
 }
 
+interface EventData {
+  id: string;
+  event: any;
+  participants: any[];
+  downloadedAt: string;
+}
+
 interface TicketDB extends DBSchema {
   tickets: {
     key: string;
@@ -34,6 +41,10 @@ interface TicketDB extends DBSchema {
     key: number; // Auto-increment ID
     value: PendingRegistration;
   };
+  'offline-events': {
+    key: string; // Event ID
+    value: EventData;
+  };
 }
 
 @Injectable({
@@ -43,7 +54,7 @@ export class OfflineService {
   private dbPromise: Promise<IDBPDatabase<TicketDB>>;
 
   constructor() {
-    this.dbPromise = openDB<TicketDB>('ticket-db', 2, {
+    this.dbPromise = openDB<TicketDB>('ticket-db', 3, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('tickets')) {
           db.createObjectStore('tickets', { keyPath: 'code' });
@@ -53,6 +64,9 @@ export class OfflineService {
         }
         if (!db.objectStoreNames.contains('pending-registrations')) {
           db.createObjectStore('pending-registrations', { autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains('offline-events')) {
+          db.createObjectStore('offline-events', { keyPath: 'id' });
         }
       },
     });
@@ -104,5 +118,31 @@ export class OfflineService {
   async clearPendingRegistrations() {
     const db = await this.dbPromise;
     await db.clear('pending-registrations');
+  }
+
+  async saveEventForOffline(eventId: string, event: any, participants: any[]) {
+    const db = await this.dbPromise;
+    const eventData: EventData = {
+      id: eventId,
+      event,
+      participants,
+      downloadedAt: new Date().toISOString()
+    };
+    await db.put('offline-events', eventData);
+  }
+
+  async getOfflineEvent(eventId: string): Promise<EventData | undefined> {
+    const db = await this.dbPromise;
+    return db.get('offline-events', eventId);
+  }
+
+  async getAllOfflineEvents(): Promise<EventData[]> {
+    const db = await this.dbPromise;
+    return db.getAll('offline-events');
+  }
+
+  async deleteOfflineEvent(eventId: string) {
+    const db = await this.dbPromise;
+    await db.delete('offline-events', eventId);
   }
 }

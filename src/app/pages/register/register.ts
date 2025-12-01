@@ -54,10 +54,13 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.isLoading = true;
 
+    // Formatar CPF antes de enviar (com pontos e hífen)
+    const cpfFormatted = cpfClean.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+
     // Chamar o serviço de registro
     this.authService.register({
       name: this.name,
-      cpf: cpfClean,
+      cpf: cpfFormatted,
       email: this.email,
       password: this.password
     }).subscribe({

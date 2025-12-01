@@ -51,7 +51,6 @@ export class EventDetailComponent implements OnInit {
     
     this.eventsService.getMyEnrollments().subscribe({
       next: (enrollments) => {
-        console.log('📋 Meus enrollments:', enrollments);
         
         // Verifica se o usuário já está inscrito neste evento
         const enrollment = enrollments.find(
@@ -63,9 +62,7 @@ export class EventDetailComponent implements OnInit {
           this.existingTicketCode = enrollment.id?.toString() || 'CONFIRMADO';
           this.enrollmentStatus = 'success';
           this.ticketCode = this.existingTicketCode;
-          console.log('✅ Usuário já inscrito! Código:', this.ticketCode);
         } else {
-          console.log('❌ Usuário não inscrito neste evento');
         }
         
         this.checkingEnrollment = false;

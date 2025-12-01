@@ -5,7 +5,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const publicRoutes = [
     '/api/events',
     '/api/login',
-    '/api/register',
+    '/api/users',  // Rota de cadastro (POST)
   ];
 
   // Verifica se a URL é uma rota pública

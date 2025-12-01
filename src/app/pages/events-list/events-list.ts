@@ -49,7 +49,6 @@ export class EventsListComponent implements OnInit {
         this.enrolledEventIds = new Set(
           enrollments.map((e: any) => e.event_id)
         );
-        console.log('📋 Eventos inscritos:', Array.from(this.enrolledEventIds));
       },
       error: (err) => {
         console.error('Erro ao carregar enrollments:', err);

@@ -27,7 +27,14 @@ export class EventsListComponent implements OnInit {
   ngOnInit() {
     this.eventsService.getEvents().subscribe({
       next: (data) => {
-        this.events = data;
+        const now = new Date();
+        
+        // Filtrar apenas eventos que não foram finalizados e que ainda não começaram
+        this.events = data.filter(event => {
+          const startsAt = new Date(event.starts_at);
+          return !event.finished && startsAt > now;
+        });
+        
         this.loading = false;
         
         // Se o usuário estiver logado, buscar seus enrollments
@@ -45,9 +52,11 @@ export class EventsListComponent implements OnInit {
   loadUserEnrollments() {
     this.eventsService.getMyEnrollments().subscribe({
       next: (enrollments) => {
-        // Criar um Set com os IDs dos eventos inscritos
+        // Criar um Set com os IDs dos eventos inscritos (excluindo cancelados)
         this.enrolledEventIds = new Set(
-          enrollments.map((e: any) => e.event_id)
+          enrollments
+            .filter((e: any) => e.status !== 'cancelled')
+            .map((e: any) => e.event_id)
         );
       },
       error: (err) => {

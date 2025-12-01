@@ -35,7 +35,14 @@ export class AttendantSalesComponent implements OnInit {
         this.loadAvailableEvents();
     }
 
-    loadAvailableEvents() {
+    async loadAvailableEvents() {
+        // Se estiver offline, carregar do IndexedDB
+        if (this.isOffline) {
+            await this.loadOfflineEvents();
+            return;
+        }
+
+        // Se estiver online, carregar da API
         this.eventsService.getEvents().subscribe({
             next: (events) => {
                 const now = new Date();
@@ -51,12 +58,39 @@ export class AttendantSalesComponent implements OnInit {
                     new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
                 );
             },
-            error: (err) => {
+            error: async (err) => {
                 console.error('Erro ao carregar eventos:', err);
-                this.status = 'error';
-                this.message = 'Erro ao carregar eventos disponíveis.';
+                // Se falhar, tentar carregar do offline
+                await this.loadOfflineEvents();
             }
         });
+    }
+
+    async loadOfflineEvents() {
+        try {
+            const offlineEvents = await this.offlineService.getAllOfflineEvents();
+            const now = new Date();
+            
+            // Filtrar eventos que ainda não terminaram e mapear para Event[]
+            this.availableEvents = offlineEvents
+                .map(data => data.event)
+                .filter(event => {
+                    const endTime = new Date(event.ends_at);
+                    return endTime > now;
+                })
+                .sort((a, b) => 
+                    new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime()
+                );
+
+            if (this.availableEvents.length === 0) {
+                this.status = 'error';
+                this.message = 'Nenhum evento disponível offline. Conecte-se à internet e clique em "Baixar Dados" primeiro.';
+            }
+        } catch (err) {
+            console.error('Erro ao carregar eventos offline:', err);
+            this.status = 'error';
+            this.message = 'Erro ao carregar eventos offline.';
+        }
     }
 
     formatEventTime(dateString: string): string {
@@ -91,20 +125,26 @@ export class AttendantSalesComponent implements OnInit {
             await this.offlineService.addPendingRegistration(registration);
 
             this.status = 'success';
-            this.message = 'Registro salvo! ' + (this.isOffline ? 'Será sincronizado quando online.' : 'Sincronizando agora...');
+            this.message = 'Registro salvo! Clique em "Sincronizar" para enviar ao servidor.';
 
             this.name = '';
             this.email = '';
             this.selectedEventId = '';
 
-            if (!this.isOffline) {
-                this.syncService.sync();
-            }
-
         } catch (err) {
             console.error(err);
             this.status = 'error';
             this.message = 'Erro ao salvar registro.';
+        }
+    }
+
+    async syncNow() {
+        const result = await this.syncService.sync();
+        
+        if (result.success) {
+            alert(result.message);
+        } else {
+            alert('Erro na sincronização: ' + result.message);
         }
     }
 }

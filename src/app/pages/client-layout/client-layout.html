@@ -12,6 +12,12 @@
                 <!-- Navigation -->
                 <nav class="flex items-center space-x-4">
                     <ng-container *ngIf="auth.currentUser; else loginBtn">
+                        <a 
+                            routerLink="/dashboard"
+                            routerLinkActive="text-blue-600"
+                            class="text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200">
+                            Meu Dashboard
+                        </a>
                         <span class="text-gray-700 font-medium">Olá, <span class="text-blue-600">{{ auth.currentUser.name }}</span></span>
                         <button
                             (click)="logout()"

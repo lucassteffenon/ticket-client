@@ -52,9 +52,9 @@ export class EventDetailComponent implements OnInit {
     this.eventsService.getMyEnrollments().subscribe({
       next: (enrollments) => {
         
-        // Verifica se o usuário já está inscrito neste evento
+        // Verifica se o usuário já está inscrito neste evento (excluindo cancelados)
         const enrollment = enrollments.find(
-          (e: any) => e.event_id === parseInt(this.event?.id || '0')
+          (e: any) => e.event_id === parseInt(this.event?.id || '0') && e.status !== 'cancelled'
         );
         
         if (enrollment) {
@@ -63,6 +63,7 @@ export class EventDetailComponent implements OnInit {
           this.enrollmentStatus = 'success';
           this.ticketCode = this.existingTicketCode;
         } else {
+          this.isAlreadyEnrolled = false;
         }
         
         this.checkingEnrollment = false;
@@ -105,4 +106,20 @@ export class EventDetailComponent implements OnInit {
       }
     });
   }
+
+  cancelEnrollment() {
+    if (!this.event || !this.auth.currentUser) return;
+
+    this.eventsService.cancelEnrollment(parseInt(this.event.id), this.auth.currentUser.id).subscribe({
+      next: () => {
+        this.isAlreadyEnrolled = false;
+        this.ticketCode = '';
+        this.enrollmentStatus = 'idle';
+      },
+      error: (err) => {
+        console.error('Erro ao cancelar enrollment:', err);
+      }
+    });
+  }
+
 }

@@ -4,6 +4,32 @@
     <!-- Status Bar -->
     <div class="mb-6 flex items-center justify-between">
       <h1 class="text-3xl font-bold text-gray-900">Check-in de Eventos</h1>
+      
+      <div class="flex gap-3">
+        <!-- Botão Baixar Todos os Dados -->
+        <button 
+          (click)="downloadAllData()"
+          [disabled]="syncService.syncing$ | async"
+          class="flex items-center bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200">
+          <svg *ngIf="!(syncService.syncing$ | async)" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          <div *ngIf="syncService.syncing$ | async" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          Baixar Dados
+        </button>
+
+        <!-- Botão Sincronizar -->
+        <button 
+          (click)="syncNow()"
+          [disabled]="syncService.syncing$ | async"
+          class="flex items-center bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200">
+          <svg *ngIf="!(syncService.syncing$ | async)" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <div *ngIf="syncService.syncing$ | async" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+          Sincronizar
+        </button>
+      </div>
     </div>
 
     <!-- Loading -->

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { EventsService, Event } from '../../services/events.service';
 import { OfflineService } from '../../services/offline.service';
+import { SyncService } from '../../services/sync.service';
 import { AppConfig } from '../../config';
 
 interface Participant {
@@ -34,6 +35,7 @@ export class AttendantDashboardComponent implements OnInit {
     constructor(
         private eventsService: EventsService,
         private offlineService: OfflineService,
+        public syncService: SyncService,
         private http: HttpClient
     ) {
         window.addEventListener('online', () => this.isOffline = false);
@@ -55,7 +57,8 @@ export class AttendantDashboardComponent implements OnInit {
 
         this.eventsService.getEvents().subscribe({
             next: (data) => {
-                this.events = data;
+                // Filtrar apenas eventos não finalizados
+                this.events = data.filter(event => !event.finished);
                 this.loading = false;
             },
             error: (err) => {
@@ -69,7 +72,10 @@ export class AttendantDashboardComponent implements OnInit {
     async loadOfflineEvents() {
         try {
             const offlineEvents = await this.offlineService.getAllOfflineEvents();
-            this.events = offlineEvents.map(data => data.event);
+            // Filtrar apenas eventos não finalizados
+            this.events = offlineEvents
+                .map(data => data.event)
+                .filter(event => !event.finished);
             this.loading = false;
             
             if (this.events.length === 0) {
@@ -174,6 +180,39 @@ export class AttendantDashboardComponent implements OnInit {
     async checkIn(participant: Participant) {
         if (participant.checked_in) return;
 
+        const checkinTime = new Date().toISOString();
+
+        // Se estiver offline, salvar para sincronizar depois
+        if (this.isOffline) {
+            try {
+                await this.offlineService.addPendingCheckin({
+                    event_id: this.selectedEvent?.id || '',
+                    user_id: participant.id,
+                    checkin_time: checkinTime
+                });
+
+                // Atualizar localmente
+                participant.checked_in = true;
+                participant.checked_in_at = checkinTime;
+
+                // Atualizar dados offline salvos
+                if (this.selectedEvent) {
+                    await this.offlineService.saveEventForOffline(
+                        this.selectedEvent.id,
+                        this.selectedEvent,
+                        this.participants
+                    );
+                }
+
+                alert('Check-in salvo! Será sincronizado quando voltar online.');
+            } catch (err) {
+                console.error('Erro ao salvar check-in offline:', err);
+                alert('Erro ao salvar check-in offline.');
+            }
+            return;
+        }
+
+        // Se estiver online, enviar para API
         const token = localStorage.getItem('token') || '';
         const headers = new HttpHeaders({
             'Authorization': `Bearer ${token}`
@@ -181,12 +220,12 @@ export class AttendantDashboardComponent implements OnInit {
 
         this.http.post(
             `${AppConfig.apiUrl}/api/enrollments/events/${this.selectedEvent?.id}/users/${participant.id}/presence`,
-            { ticket_code: participant.ticket_code },
+            { checkin_time: checkinTime },
             { headers }
         ).subscribe({
             next: () => {
                 participant.checked_in = true;
-                participant.checked_in_at = new Date().toISOString();
+                participant.checked_in_at = checkinTime;
             },
             error: (err) => {
                 console.error('Erro ao fazer check-in:', err);
@@ -234,5 +273,33 @@ export class AttendantDashboardComponent implements OnInit {
 
     getTotalCount(): number {
         return this.participants.length;
+    }
+
+    async syncNow() {
+        const result = await this.syncService.sync();
+        
+        if (result.success) {
+            alert(result.message);
+            
+            // Recarregar participantes do evento selecionado se houver
+            if (this.selectedEvent) {
+                await this.loadParticipants(this.selectedEvent.id);
+            }
+        } else {
+            alert('Erro na sincronização: ' + result.message);
+        }
+    }
+
+    async downloadAllData() {
+        const result = await this.syncService.downloadAllData();
+        
+        if (result.success) {
+            alert(result.message);
+            
+            // Recarregar lista de eventos
+            this.loadEvents();
+        } else {
+            alert('Erro no download: ' + result.message);
+        }
     }
 }

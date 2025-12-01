@@ -21,6 +21,12 @@ export interface PendingRegistration {
   timestamp: number;
 }
 
+export interface PendingCheckin {
+  event_id: string;
+  user_id: string;
+  checkin_time: string;
+}
+
 interface EventData {
   id: string;
   event: any;
@@ -41,6 +47,10 @@ interface TicketDB extends DBSchema {
     key: number; // Auto-increment ID
     value: PendingRegistration;
   };
+  'pending-checkins': {
+    key: number; // Auto-increment ID
+    value: PendingCheckin;
+  };
   'offline-events': {
     key: string; // Event ID
     value: EventData;
@@ -54,7 +64,7 @@ export class OfflineService {
   private dbPromise: Promise<IDBPDatabase<TicketDB>>;
 
   constructor() {
-    this.dbPromise = openDB<TicketDB>('ticket-db', 3, {
+    this.dbPromise = openDB<TicketDB>('ticket-db', 4, {
       upgrade(db) {
         if (!db.objectStoreNames.contains('tickets')) {
           db.createObjectStore('tickets', { keyPath: 'code' });
@@ -64,6 +74,9 @@ export class OfflineService {
         }
         if (!db.objectStoreNames.contains('pending-registrations')) {
           db.createObjectStore('pending-registrations', { autoIncrement: true });
+        }
+        if (!db.objectStoreNames.contains('pending-checkins')) {
+          db.createObjectStore('pending-checkins', { autoIncrement: true });
         }
         if (!db.objectStoreNames.contains('offline-events')) {
           db.createObjectStore('offline-events', { keyPath: 'id' });
@@ -144,5 +157,20 @@ export class OfflineService {
   async deleteOfflineEvent(eventId: string) {
     const db = await this.dbPromise;
     await db.delete('offline-events', eventId);
+  }
+
+  async addPendingCheckin(checkin: PendingCheckin) {
+    const db = await this.dbPromise;
+    await db.add('pending-checkins', checkin);
+  }
+
+  async getPendingCheckins(): Promise<PendingCheckin[]> {
+    const db = await this.dbPromise;
+    return db.getAll('pending-checkins');
+  }
+
+  async clearPendingCheckins() {
+    const db = await this.dbPromise;
+    await db.clear('pending-checkins');
   }
 }

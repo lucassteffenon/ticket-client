@@ -1,15 +1,14 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // Lista de rotas públicas que NÃO precisam de token
-  const publicRoutes = [
-    '/api/events',
-    '/api/login',
-    '/api/users',  // Rota de cadastro (POST)
-  ];
-
-  // Verifica se a URL é uma rota pública
-  const isPublicRoute = publicRoutes.some(route => req.url.includes(route));
+  // Verifica se a URL corresponde exatamente às rotas públicas
+  const isPublicRoute = 
+    // GET /api/events (listar eventos) - público
+    (req.url.includes('/api/events') && req.method === 'GET' && !req.url.match(/\/api\/events\/\d+\//)) ||
+    // POST /api/login - público
+    req.url.includes('/api/login') ||
+    // POST /api/users (cadastro) - público
+    (req.url.includes('/api/users') && req.method === 'POST' && req.url.endsWith('/api/users'));
 
   // Se for rota pública, não adiciona o token
   if (isPublicRoute) {

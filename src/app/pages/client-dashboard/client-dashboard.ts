@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth';
 import { EventsService } from '../../services/events.service';
 import { jsPDF } from 'jspdf';
@@ -21,7 +22,7 @@ interface Enrollment {
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './client-dashboard.html',
 })
 export class ClientDashboardComponent implements OnInit {
@@ -30,6 +31,11 @@ export class ClientDashboardComponent implements OnInit {
   activeEnrollments: Enrollment[] = [];
   completedEnrollments: Enrollment[] = [];
   loading = true;
+  
+  // Certificate verification
+  verificationHash: string = '';
+  verifying: boolean = false;
+  verificationResult: any = null;
 
   constructor(
     public auth: AuthService,
@@ -262,5 +268,34 @@ generateCertificate(enrollment: Enrollment) {
 
   getCertificatesCount(): number {
     return this.completedEnrollments.filter(e => e.can_generate_certificate).length;
+  }
+
+  verifyCertificate() {
+    if (!this.verificationHash.trim()) {
+      alert('Por favor, insira o código de verificação.');
+      return;
+    }
+
+    this.verifying = true;
+    this.verificationResult = null;
+
+    this.eventsService.verifyCertificate(this.verificationHash.trim()).subscribe({
+      next: (response) => {
+        this.verifying = false;
+        this.verificationResult = {
+          valid: true,
+          message: 'Este certificado é válido e foi emitido oficialmente.',
+          data: response
+        };
+      },
+      error: (err) => {
+        this.verifying = false;
+        this.verificationResult = {
+          valid: false,
+          message: err.error?.message || 'Certificado não encontrado ou inválido.',
+          data: null
+        };
+      }
+    });
   }
 }

@@ -81,4 +81,10 @@ export class EventsService {
             `${this.apiUrl}/api/certificates/me`
         );
     }
+
+    verifyCertificate(hash: string): Observable<any> {
+        return this.http.get<any>(
+            `${this.apiUrl}/api/certificates/verify/${hash}`
+        );
+    }
 }

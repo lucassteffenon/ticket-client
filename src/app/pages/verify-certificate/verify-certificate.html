@@ -1,0 +1,172 @@
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="bg-blue-600 rounded-full p-4">
+                    <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                        </path>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900 mb-2">Validar Certificado</h1>
+            <p class="text-lg text-gray-600">Verifique a autenticidade de um certificado digital</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <div class="space-y-6">
+
+                <!-- Instructions -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="text-sm text-blue-800">
+                            <p class="font-semibold mb-1">Como verificar:</p>
+                            <p>Cole o código de verificação (hash) que está impresso no certificado no campo abaixo e
+                                clique em "Verificar".</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Field -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-3">Código de Verificação (Hash)</label>
+                    <input type="text" [(ngModel)]="verificationHash" placeholder="Cole o código de verificação aqui..."
+                        class="w-full px-4 py-4 border-2 border-gray-300 rounded-lg text-base transition-all outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100" />
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex gap-3">
+                    <button (click)="verifyCertificate()" [disabled]="!verificationHash || verifying"
+                        class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                        <svg *ngIf="!verifying" class="w-5 h-5 mr-2" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div *ngIf="verifying" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2">
+                        </div>
+                        {{ verifying ? 'Verificando...' : 'Verificar Certificado' }}
+                    </button>
+
+                    <button *ngIf="verificationResult" (click)="clearVerification()"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-4 px-6 rounded-lg transition-colors duration-200">
+                        Limpar
+                    </button>
+                </div>
+
+                <!-- Verification Result -->
+                <div *ngIf="verificationResult" class="mt-6 p-6 rounded-xl border-2 animate-fade-in"
+                    [class]="verificationResult.valid ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'">
+                    <div class="flex items-start">
+                        <!-- Valid Icon -->
+                        <div *ngIf="verificationResult.valid" class="flex-shrink-0">
+                            <div class="bg-green-100 rounded-full p-3">
+                                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- Invalid Icon -->
+                        <div *ngIf="!verificationResult.valid" class="flex-shrink-0">
+                            <div class="bg-red-100 rounded-full p-3">
+                                <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-xl font-bold mb-2"
+                                [class]="verificationResult.valid ? 'text-green-800' : 'text-red-800'">
+                                {{ verificationResult.valid ? '✓ Certificado Válido!' : '✗ Certificado Inválido' }}
+                            </h3>
+                            <p class="text-base mb-3"
+                                [class]="verificationResult.valid ? 'text-green-700' : 'text-red-700'">
+                                {{ verificationResult.message }}
+                            </p>
+
+                            <!-- Certificate Details (if valid) -->
+                            <div *ngIf="verificationResult.valid && verificationResult.data"
+                                class="mt-4 pt-4 border-t border-green-200 space-y-2">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div class="bg-white rounded-lg p-3">
+                                        <p class="text-xs text-green-600 font-semibold uppercase mb-1">Emitido em</p>
+                                        <p class="text-sm text-gray-900 font-medium">
+                                            {{ verificationResult.data.issued_at | date:'dd/MM/yyyy HH:mm' }}
+                                        </p>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3">
+                                        <p class="text-xs text-green-600 font-semibold uppercase mb-1">Status</p>
+                                        <p class="text-sm text-gray-900 font-medium">Autêntico</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-start">
+                    <div class="bg-purple-100 rounded-lg p-3 mr-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                            </path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1">Segurança</h3>
+                        <p class="text-sm text-gray-600">Todos os certificados são protegidos com hash criptográfico
+                            único.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-start">
+                    <div class="bg-blue-100 rounded-lg p-3 mr-4">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1">Verificação Instantânea</h3>
+                        <p class="text-sm text-gray-600">Validação em tempo real através do nosso sistema.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Home -->
+        <div class="text-center">
+            <a routerLink="/events"
+                class="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Voltar para Eventos
+            </a>
+        </div>
+
+    </div>
+</div>

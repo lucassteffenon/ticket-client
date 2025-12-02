@@ -77,7 +77,7 @@ export class AttendantDashboardComponent implements OnInit {
                 .map(data => data.event)
                 .filter(event => !event.finished);
             this.loading = false;
-            
+
             if (this.events.length === 0) {
                 alert('Nenhum evento disponível offline. Conecte-se à internet e baixe os dados primeiro.');
             }
@@ -99,7 +99,7 @@ export class AttendantDashboardComponent implements OnInit {
         if (this.isOffline) {
             try {
                 const offlineData = await this.offlineService.getOfflineEvent(eventId);
-                
+
                 if (offlineData) {
                     this.participants = offlineData.participants;
                     this.filteredParticipants = offlineData.participants;
@@ -118,7 +118,7 @@ export class AttendantDashboardComponent implements OnInit {
         }
 
         // Se estiver online, carregar da API
-        const token = localStorage.getItem('token') || '';
+        const token = sessionStorage.getItem('token') || '';
         const headers = new HttpHeaders({
             'Authorization': `Bearer ${token}`
         });
@@ -137,13 +137,13 @@ export class AttendantDashboardComponent implements OnInit {
                     }));
                     this.filteredParticipants = this.participants;
                     this.loading = false;
-                    
+
                     // Verificar se já tem dados offline para este evento
                     this.checkOfflineData(eventId);
                 },
                 error: async (err) => {
                     console.error('Erro ao carregar participantes:', err);
-                    
+
                     // Se falhar, tentar carregar do offline
                     const offlineData = await this.offlineService.getOfflineEvent(eventId);
                     if (offlineData) {
@@ -152,7 +152,7 @@ export class AttendantDashboardComponent implements OnInit {
                         this.offlineDataLoaded = true;
                         alert('Carregando dados salvos offline (sem conexão com servidor).');
                     }
-                    
+
                     this.loading = false;
                 }
             });
@@ -170,7 +170,7 @@ export class AttendantDashboardComponent implements OnInit {
         }
 
         const term = this.searchTerm.toLowerCase();
-        this.filteredParticipants = this.participants.filter(p => 
+        this.filteredParticipants = this.participants.filter(p =>
             p.name.toLowerCase().includes(term) ||
             p.email.toLowerCase().includes(term) ||
             p.ticket_code.toLowerCase().includes(term)
@@ -213,7 +213,7 @@ export class AttendantDashboardComponent implements OnInit {
         }
 
         // Se estiver online, enviar para API
-        const token = localStorage.getItem('token') || '';
+        const token = sessionStorage.getItem('token') || '';
         const headers = new HttpHeaders({
             'Authorization': `Bearer ${token}`
         });
@@ -249,7 +249,7 @@ export class AttendantDashboardComponent implements OnInit {
                 this.selectedEvent,
                 this.participants
             );
-            
+
             this.offlineDataLoaded = true;
             this.loading = false;
             alert('Dados baixados com sucesso! Agora você pode trabalhar offline.');
@@ -277,10 +277,10 @@ export class AttendantDashboardComponent implements OnInit {
 
     async syncNow() {
         const result = await this.syncService.sync();
-        
+
         if (result.success) {
             alert(result.message);
-            
+
             // Recarregar participantes do evento selecionado se houver
             if (this.selectedEvent) {
                 await this.loadParticipants(this.selectedEvent.id);
@@ -292,10 +292,10 @@ export class AttendantDashboardComponent implements OnInit {
 
     async downloadAllData() {
         const result = await this.syncService.downloadAllData();
-        
+
         if (result.success) {
             alert(result.message);
-            
+
             // Recarregar lista de eventos
             this.loadEvents();
         } else {

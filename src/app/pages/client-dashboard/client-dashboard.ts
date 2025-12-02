@@ -31,7 +31,7 @@ export class ClientDashboardComponent implements OnInit {
   activeEnrollments: Enrollment[] = [];
   completedEnrollments: Enrollment[] = [];
   loading = true;
-  
+
   // Certificate verification
   verificationHash: string = '';
   verifying: boolean = false;
@@ -40,7 +40,7 @@ export class ClientDashboardComponent implements OnInit {
   constructor(
     public auth: AuthService,
     private eventsService: EventsService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.user = this.auth.currentUser;
@@ -49,11 +49,11 @@ export class ClientDashboardComponent implements OnInit {
 
   loadEnrollments() {
     this.loading = true;
-    
+
     this.eventsService.getMyEnrollments().subscribe({
       next: (enrollments) => {
         this.enrollments = enrollments.filter((e: any) => e.status !== 'cancelled');
-        
+
         // Carregar detalhes dos eventos para cada enrollment
         this.loadEventDetails();
       },
@@ -65,8 +65,8 @@ export class ClientDashboardComponent implements OnInit {
   }
 
   loadEventDetails() {
-    const token = localStorage.getItem('token') || '';
-    
+    const token = sessionStorage.getItem('token') || '';
+
     // Carregar detalhes de cada evento
     const eventPromises = this.enrollments.map(enrollment => {
       return this.eventsService.getEvent(enrollment.event_id.toString()).toPromise();
@@ -76,21 +76,21 @@ export class ClientDashboardComponent implements OnInit {
       // Associar eventos aos enrollments
       this.enrollments.forEach((enrollment, index) => {
         enrollment.event = events[index];
-        
+
         // Verificar se pode gerar certificado:
         // 1. Evento foi finalizado (finished = true)
         // 2. Status 'present' (teve check-in)
         if (enrollment.event) {
           const eventFinished = enrollment.event.finished === true;
           const hasPresence = enrollment.status === 'present';
-          
+
           enrollment.can_generate_certificate = eventFinished && hasPresence;
         }
       });
 
       // Separar enrollments ativos e completados
       const now = new Date();
-      
+
       this.activeEnrollments = this.enrollments.filter(e => {
         if (!e.event?.starts_at) return false;
         // Evento é ativo se NÃO foi finalizado E a data de início ainda não passou
@@ -112,27 +112,27 @@ export class ClientDashboardComponent implements OnInit {
     });
   }
 
-generateCertificate(enrollment: Enrollment) {
-  if (!enrollment.can_generate_certificate) return;
+  generateCertificate(enrollment: Enrollment) {
+    if (!enrollment.can_generate_certificate) return;
 
-  this.eventsService.getCertificateData().subscribe({
-    next: (certificates) => {
-      // Filtra o certificado do evento específico
-      const certData = certificates.find(cert => cert.event_id === enrollment.event_id);
-      
-      if (certData) {
-        this.createCertificatePDF(enrollment, certData);
-      } else {
-        console.error('Certificado não encontrado para este evento');
-        alert('Certificado não encontrado para este evento.');
+    this.eventsService.getCertificateData().subscribe({
+      next: (certificates) => {
+        // Filtra o certificado do evento específico
+        const certData = certificates.find(cert => cert.event_id === enrollment.event_id);
+
+        if (certData) {
+          this.createCertificatePDF(enrollment, certData);
+        } else {
+          console.error('Certificado não encontrado para este evento');
+          alert('Certificado não encontrado para este evento.');
+        }
+      },
+      error: (err) => {
+        console.error('Erro ao gerar certificado:', err);
+        alert('Erro ao gerar certificado. Tente novamente.');
       }
-    },
-    error: (err) => {
-      console.error('Erro ao gerar certificado:', err);
-      alert('Erro ao gerar certificado. Tente novamente.');
-    }
-  });
-}
+    });
+  }
 
   private createCertificatePDF(enrollment: Enrollment, certData: any) {
     const doc = new jsPDF({
@@ -148,7 +148,7 @@ generateCertificate(enrollment: Enrollment) {
     doc.setDrawColor(41, 128, 185);
     doc.setLineWidth(2);
     doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
-    
+
     doc.setLineWidth(0.5);
     doc.rect(15, 15, pageWidth - 30, pageHeight - 30);
 
@@ -197,7 +197,7 @@ generateCertificate(enrollment: Enrollment) {
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
       doc.setTextColor(100, 100, 100);
-      
+
       let eventInfo = '';
       if (enrollment.event?.location) {
         eventInfo += `Local: ${enrollment.event.location}`;
@@ -207,7 +207,7 @@ generateCertificate(enrollment: Enrollment) {
         if (eventInfo) eventInfo += ' | ';
         eventInfo += `Data: ${eventDate.toLocaleDateString('pt-BR')}`;
       }
-      
+
       doc.text(eventInfo, pageWidth / 2, 130, { align: 'center' });
     }
 

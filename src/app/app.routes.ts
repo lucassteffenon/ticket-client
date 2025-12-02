@@ -8,6 +8,8 @@ import { AttendantDashboardComponent } from './pages/attendant-dashboard/attenda
 import { AttendantSalesComponent } from './pages/attendant-sales/attendant-sales';
 import { AttendantFinalizeComponent } from './pages/attendant-finalize/attendant-finalize';
 import { AttendantLayoutComponent } from './pages/attendant-layout/attendant-layout';
+import { VerifyCertificateComponent } from './pages/verify-certificate/verify-certificate';
+import { AttendantVerifyCertificateComponent } from './pages/attendant-verify-certificate/attendant-verify-certificate';
 import { AuthGuard } from './guards/auth.guard';
 import { ClientLayoutComponent } from './pages/client-layout/client-layout';
 
@@ -16,6 +18,7 @@ export const routes: Routes = [
 
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'verify-certificate', component: VerifyCertificateComponent },
   {
     path: '',
     component: ClientLayoutComponent,
@@ -34,6 +37,7 @@ export const routes: Routes = [
       { path: 'validate', component: AttendantDashboardComponent },
       { path: 'sales', component: AttendantSalesComponent },
       { path: 'finalize', component: AttendantFinalizeComponent },
+      { path: 'verify', component: AttendantVerifyCertificateComponent },
     ]
   },
 ];

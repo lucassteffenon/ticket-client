@@ -13,7 +13,7 @@ export class SyncService {
     public syncing$ = new BehaviorSubject<boolean>(false);
     public lastSyncTime$ = new BehaviorSubject<Date | null>(null);
 
-    constructor(private http: HttpClient, private offlineService: OfflineService) {}
+    constructor(private http: HttpClient, private offlineService: OfflineService) { }
 
     private formatDateTime(timestamp: number): string {
         const date = new Date(timestamp);
@@ -23,7 +23,7 @@ export class SyncService {
         const hours = String(date.getHours()).padStart(2, '0');
         const minutes = String(date.getMinutes()).padStart(2, '0');
         const seconds = String(date.getSeconds()).padStart(2, '0');
-        
+
         return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
     }
 
@@ -41,7 +41,7 @@ export class SyncService {
         };
 
         // Pegar token de autenticação
-        const token = localStorage.getItem('token') || '';
+        const token = sessionStorage.getItem('token') || '';
         const headers = new HttpHeaders({
             'Authorization': `Bearer ${token}`
         });
@@ -51,7 +51,7 @@ export class SyncService {
             const pendingCheckins = await this.offlineService.getPendingCheckins();
             if (pendingCheckins.length > 0) {
                 console.log(`Sincronizando ${pendingCheckins.length} check-ins...`);
-                
+
                 for (const checkin of pendingCheckins) {
                     try {
                         await firstValueFrom(
@@ -67,7 +67,7 @@ export class SyncService {
                         results.errors.push(`Check-in user ${checkin.user_id}: ${err.message}`);
                     }
                 }
-                
+
                 await this.offlineService.clearPendingCheckins();
                 console.log(`${results.checkins} check-ins sincronizados.`);
             }
@@ -77,7 +77,7 @@ export class SyncService {
             if (pendingRegistrations.length > 0) {
                 console.log(`Sincronizando ${pendingRegistrations.length} registros presenciais...`);
                 console.log('Registros pendentes:', pendingRegistrations);
-                
+
                 // Agrupar por evento
                 const byEvent = pendingRegistrations.reduce((acc, reg) => {
                     if (!acc[reg.eventId]) acc[reg.eventId] = [];
@@ -96,7 +96,7 @@ export class SyncService {
                     const payload = { users };
                     console.log(`Enviando para evento ${eventId}:`, payload);
                     console.log('URL:', `${this.apiUrl}/enrollments/events/${eventId}/sync`);
-                    
+
                     try {
                         const response = await firstValueFrom(
                             this.http.post(
@@ -113,7 +113,7 @@ export class SyncService {
                         results.errors.push(`Evento ${eventId}: ${err.message}`);
                     }
                 }
-                
+
                 await this.offlineService.clearPendingRegistrations();
                 console.log(`${results.registrations} registros presenciais sincronizados.`);
             }
@@ -158,7 +158,7 @@ export class SyncService {
             errors: [] as string[]
         };
 
-        const token = localStorage.getItem('token') || '';
+        const token = sessionStorage.getItem('token') || '';
         const headers = new HttpHeaders({
             'Authorization': `Bearer ${token}`
         });
@@ -176,7 +176,7 @@ export class SyncService {
             for (const event of events) {
                 try {
                     console.log(`Baixando participantes do evento: ${event.title}`);
-                    
+
                     const enrollments: any[] = await firstValueFrom(
                         this.http.get<any[]>(
                             `${this.apiUrl}/enrollments/events/${event.id}`,

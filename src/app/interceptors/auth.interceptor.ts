@@ -2,7 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // Verifica se a URL corresponde exatamente às rotas públicas
-  const isPublicRoute = 
+  const isPublicRoute =
     // GET /api/events (listar eventos) - público
     (req.url.includes('/api/events') && req.method === 'GET' && !req.url.match(/\/api\/events\/\d+\//)) ||
     // POST /api/login - público
@@ -16,8 +16,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   // Para rotas privadas, adiciona o token se existir
-  const token = localStorage.getItem('token');
-  
+  const token = sessionStorage.getItem('token');
+
   if (token) {
     const clonedRequest = req.clone({
       setHeaders: {

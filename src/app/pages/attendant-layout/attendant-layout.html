@@ -13,17 +13,22 @@
             <a routerLink="/attendant/validate" routerLinkActive="bg-white/20"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
                 <span class="text-2xl">✅</span>
-                <span class="font-medium" [class.hidden]="!isSidebarOpen">Validar Ingresso</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Check In</span>
             </a>
             <a routerLink="/attendant/sales" routerLinkActive="bg-white/20"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
                 <span class="text-2xl">🎟️</span>
-                <span class="font-medium" [class.hidden]="!isSidebarOpen">Vender Ingresso</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Inscrição</span>
             </a>
             <a routerLink="/attendant/finalize" routerLinkActive="bg-white/20"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
                 <span class="text-2xl">🏆</span>
-                <span class="font-medium" [class.hidden]="!isSidebarOpen">Finalizar Eventos</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Gerar Certificados</span>
+            </a>
+            <a routerLink="/attendant/verify" routerLinkActive="bg-white/20"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
+                <span class="text-2xl">🔍</span>
+                <span class="font-medium" [class.hidden]="!isSidebarOpen">Validar Certificados</span>
             </a>
         </nav>
 
@@ -31,7 +36,7 @@
         <div class="p-4 border-t border-white/10">
             <button (click)="logout()"
                 class="flex items-center space-x-3 w-full px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200">
-                <span class="text-2xl">🚪</span>
+                <span class="text-2xl">↪</span>
                 <span class="font-medium" [class.hidden]="!isSidebarOpen">Sair</span>
             </button>
         </div>

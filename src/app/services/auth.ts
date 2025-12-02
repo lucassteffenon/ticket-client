@@ -18,14 +18,14 @@ export class AuthService {
   }
 
   private loadSession() {
-    const savedUser = localStorage.getItem('currentUser');
+    const savedUser = sessionStorage.getItem('currentUser');
     if (savedUser) {
       this.currentUser = JSON.parse(savedUser);
     }
   }
 
   login(email: string, password: string): Observable<any> {
-    
+
     return this.http.post(`${this.apiUrl}/api/login`, {
       email,
       password
@@ -50,7 +50,7 @@ export class AuthService {
 
   logout() {
     this.currentUser = null;
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('currentUser');
+    sessionStorage.removeItem('token');
   }
 }

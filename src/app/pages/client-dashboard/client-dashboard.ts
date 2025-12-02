@@ -72,15 +72,13 @@ export class ClientDashboardComponent implements OnInit {
         enrollment.event = events[index];
         
         // Verificar se pode gerar certificado:
-        // 1. Evento já terminou
+        // 1. Evento foi finalizado (finished = true)
         // 2. Status 'present' (teve check-in)
         if (enrollment.event) {
-          const eventDate = new Date(enrollment.event.ends_at || enrollment.event.starts_at);
-          const now = new Date();
-          const eventEnded = eventDate < now;
+          const eventFinished = enrollment.event.finished === true;
           const hasPresence = enrollment.status === 'present';
           
-          enrollment.can_generate_certificate = eventEnded && hasPresence;
+          enrollment.can_generate_certificate = eventFinished && hasPresence;
         }
       });
 
@@ -89,15 +87,16 @@ export class ClientDashboardComponent implements OnInit {
       
       this.activeEnrollments = this.enrollments.filter(e => {
         if (!e.event?.starts_at) return false;
+        // Evento é ativo se NÃO foi finalizado E a data de início ainda não passou
         const eventDate = new Date(e.event.starts_at);
-        return eventDate >= now;
+        return !e.event.finished && eventDate >= now;
       });
 
       this.completedEnrollments = this.enrollments.filter(e => {
-        if (!e.event?.starts_at) return false;
-        // Usa ends_at se existir, senão usa starts_at
+        if (!e.event) return false;
+        // Evento é completado se foi finalizado OU se a data de término já passou
         const eventEndDate = e.event.ends_at ? new Date(e.event.ends_at) : new Date(e.event.starts_at);
-        return eventEndDate < now;
+        return e.event.finished || eventEndDate < now;
       });
 
       this.loading = false;

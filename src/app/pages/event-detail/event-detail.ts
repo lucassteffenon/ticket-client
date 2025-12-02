@@ -20,6 +20,8 @@ export class EventDetailComponent implements OnInit {
 
   enrollmentStatus: 'idle' | 'processing' | 'success' | 'error' = 'idle';
   ticketCode = '';
+  hasPresence = false;
+  eventEnded = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,7 +37,11 @@ export class EventDetailComponent implements OnInit {
       this.eventsService.getEvent(id).subscribe((event) => {
         this.event = event;
         this.loading = false;
-        
+
+        if (this.event && this.event.ends_at) {
+          this.eventEnded = new Date(this.event.ends_at) < new Date();
+        }
+
         // Se o usuário estiver logado, verificar se já está inscrito
         if (this.auth.currentUser) {
           this.checkEnrollment();
@@ -48,24 +54,25 @@ export class EventDetailComponent implements OnInit {
 
   checkEnrollment() {
     this.checkingEnrollment = true;
-    
+
     this.eventsService.getMyEnrollments().subscribe({
       next: (enrollments) => {
-        
+
         // Verifica se o usuário já está inscrito neste evento (excluindo cancelados)
         const enrollment = enrollments.find(
           (e: any) => e.event_id === parseInt(this.event?.id || '0') && e.status !== 'cancelled'
         );
-        
+
         if (enrollment) {
           this.isAlreadyEnrolled = true;
           this.existingTicketCode = enrollment.id?.toString() || 'CONFIRMADO';
           this.enrollmentStatus = 'success';
           this.ticketCode = this.existingTicketCode;
+          this.hasPresence = enrollment.status === 'present';
         } else {
           this.isAlreadyEnrolled = false;
         }
-        
+
         this.checkingEnrollment = false;
       },
       error: (err) => {
